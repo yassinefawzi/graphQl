@@ -1,0 +1,68 @@
+:root {
+    --primary-color: #867070;
+    --secondary-color: #705d5d;
+    --text-color: #f4fcfb;
+    --shade-color: #817676;
+}   
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+h1 {
+    text-align: center;
+    font-size: 3rem;
+}
+
+.logIn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--secondary-color);
+    margin: 8% 20% 10% 20%;
+    padding: 6% 5% 6% 5%;
+    gap: 2rem;
+    border-radius: 24px;
+    box-shadow: 0 4px 8px var(--secondary-color);
+}
+
+.logInForm{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-row-gap: 10px;
+    text-align: center;
+    gap: 1.3rem;
+    width: 100%;
+}
+
+.logInForm label {
+    font-size: 1.5rem;
+}
+
+.logInForm input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+}
+
+.logInForm input[type="submit"] {
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.logInForm input[type="submit"]:hover {
+    background-color: var(--shade-color);
+    color: var(--text-color);
+}

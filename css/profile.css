@@ -1,0 +1,163 @@
+:root {
+  --primary-color: #867070;
+  --secondary-color: #705d5d;
+  --text-color: #f4fcfb;
+  --shade-color: #817676;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+body {
+  background-color: var(--primary-color);
+}
+
+#navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background-color: var(--secondary-color);
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+#navbar h2 {
+  padding-top: 0.5rem;
+  color: var(--text-color);
+}
+
+#navbar button {
+  padding: 1rem;
+  background: var(--shade-color);
+  border: none;            /* removes default border */
+  border-radius: 12px;
+  color: var(--text-color); /* ensure text is visible */
+  cursor: pointer;
+  transition: all 0.7s ease;
+}
+#navbar button:hover {
+  color: var(--shade-color);
+  background: var(--text-color);
+  scale: 1.4;
+}
+
+h1 {
+  text-align: center;
+  color: var(--text-color);
+  margin: 1rem;
+}
+
+#skillsDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+}
+
+#skillGraph {
+  width: 100%;
+  height: 100%;
+  max-width: 800px;
+}
+#skillGraph rect {
+  border-radius: 120px;
+}
+
+#skillsSection {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  width: 90%;
+  margin: 0 auto;
+  margin-bottom: 1.2rem;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px var(--shade-color);
+}
+
+#infoAudit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  width: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+  align-items: flex-start;
+}
+
+#info, #audit {
+  flex: 1 1 300px; /* allows responsive stacking */
+  min-width: 300px;
+  box-sizing: border-box;
+  background-color: var(--secondary-color);
+  border-radius: 24px;
+  box-shadow: 0 4px 12px var(--shade-color);
+  height: auto;
+}
+
+#audit {
+  height: 100%;
+  padding-bottom: 2rem;
+}
+
+#info h1,
+#audit h1 {
+  margin: 1rem 0;
+}
+
+#auditStat {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 2rem;
+  color: var(--text-color);
+}
+
+#info svg,
+#audit svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  #navbar {
+    gap: 0.8rem;
+  }
+
+  #navbar button {
+    align-self: flex-end;
+  }
+
+  #skillsDiv {
+    padding: 10px;
+  }
+
+  #skillGraph {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  #skillGraph text {
+    font-size: 10px;
+  }
+  #infoAudit {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.5rem;
+  }
+
+  #info, #audit {
+    flex: 1;
+  }
+
+  #auditStat {
+  padding: 0 1rem;
+  font-size: 0.5rem;
+}
+}
