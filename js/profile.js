@@ -28,13 +28,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           order_by: [{createdAt: desc} {id: desc}]) {
             amount
           }
-          transactions(where: {_and: [
-            { type: {_eq: "xp" } },
-            { event: {object: {name: {_eq: "Module"}}} }
-          ]}) {
-            amount
-          }
-
+          transactions(
+			where: {
+				type: {_eq: "xp"},
+				event: {object: {name: {_eq: "Module"}}}
+			},
+			order_by: {createdAt: asc}
+			) {
+			amount
+			createdAt
+			}
+			
           upTransactions: transactions(where: { type: { _eq: "up" } }) {
             amount
           }
@@ -89,6 +93,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // User Xp
     const totalXPBytes = userData.transactions.reduce((sum, tx) => sum + Number(tx.amount), 0)
     userXp = Math.ceil(totalXPBytes / 1000)
+	const xpOverTime = userData.transactions.map(tx => ({
+		date: new Date(tx.createdAt),
+		amount: Number(tx.amount)
+	}))
 
     // Sum audit UP/DOWN
     userUp = userData.upTransactions.reduce((sum, tx) => sum + Number(tx.amount), 0)
@@ -127,12 +135,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 	nameDiv.appendChild(nameh1)
     drawInfo()
 	drawBarChart()
-	drawAudit(	)
+	drawAudit()
+	const groupedXp = groupXpByDay(xpOverTime)
+	drawXp(groupedXp)
   } catch (error) {
     console.error('Error fetching user data:', error)
+	localStorage.removeItem('jwtToken')
+    window.location.href = 'index.html'
     alert('Failed to load user data. Please try again later.')
   }
 })
+
+document.getElementById('logOutButton').addEventListener('click', () => {
+  localStorage.removeItem('jwtToken')
+  window.location.href = 'index.html'
+  console.log("Logged out")
+})
+
 
 function drawBarChart() {
 	const svg = document.getElementById("skillGraph")
@@ -149,17 +168,15 @@ function drawBarChart() {
 		const chartWidth = svg.viewBox.baseVal.width - padding * 2 - 100
 		const barLength = (skill.amount / 100) * chartWidth
 
-		// === 1. Container Rectangle ===
 		const container = document.createElementNS("http://www.w3.org/2000/svg", "rect")
-		container.setAttribute("x", padding - 10) // slightly before label
+		container.setAttribute("x", padding - 10)
 		container.setAttribute("y", yStart - labelOffset)
-		container.setAttribute("width", chartWidth + 130) // leave space for bar and % text
+		container.setAttribute("width", chartWidth + 130)
 		container.setAttribute("height", spacing - 5)
-		container.setAttribute("rx", 10) // rounded corners
+		container.setAttribute("rx", 10)
 		container.setAttribute("fill", "#867070")
 		svg.appendChild(container)
 
-		// === 2. Label Text ===
 		const label = document.createElementNS("http://www.w3.org/2000/svg", "text")
 		label.setAttribute("x", padding)
 		label.setAttribute("y", yStart)
@@ -169,7 +186,6 @@ function drawBarChart() {
 		label.textContent = skill.type.replace('skill_', '')
 		svg.appendChild(label)
 
-		// === 3. Background Bar (100%) ===
 		const bgRect = document.createElementNS("http://www.w3.org/2000/svg", "rect")
 		bgRect.setAttribute("x", padding)
 		bgRect.setAttribute("y", yStart + 5)
@@ -178,7 +194,6 @@ function drawBarChart() {
 		bgRect.setAttribute("fill", "#705d5d")
 		svg.appendChild(bgRect)
 
-		// === 4. Actual Progress Bar ===
 		const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect")
 		rect.setAttribute("x", padding)
 		rect.setAttribute("y", yStart + 5)
@@ -187,7 +202,6 @@ function drawBarChart() {
 		rect.setAttribute("fill", "#f4fcfb")
 		svg.appendChild(rect)
 
-		// === 5. Percentage Text ===
 		const percentText = document.createElementNS("http://www.w3.org/2000/svg", "text")
 		percentText.setAttribute("x", padding + chartWidth + 10)
 		percentText.setAttribute("y", yStart + barHeight / 2 + 8)
@@ -220,9 +234,9 @@ function drawInfo() {
 
 	const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
 	text.setAttribute('x', cx);
-	text.setAttribute('y', cy + radius * 0.25); // Adjust vertically to center visually
+	text.setAttribute('y', cy + radius * 0.25);
 	text.setAttribute('text-anchor', 'middle');
-	text.setAttribute('font-size', radius * 0.8); // font size 80% of radius
+	text.setAttribute('font-size', radius * 0.8);
 	text.setAttribute('fill', '#f4fcfb');
 	text.setAttribute('font-family', 'Arial, sans-serif');
 	text.textContent = userLvl;
@@ -252,9 +266,9 @@ function drawAudit() {
 
 	const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
 	text.setAttribute('x', cx);
-	text.setAttribute('y', cy + radius * 0.25); // Adjust vertically to center visually
+	text.setAttribute('y', cy + radius * 0.25);
 	text.setAttribute('text-anchor', 'middle');
-	text.setAttribute('font-size', radius * 0.6); // font size 80% of radius
+	text.setAttribute('font-size', radius * 0.6);
 	text.setAttribute('fill', '#f4fcfb');
 	text.setAttribute('font-family', 'Arial, sans-serif');
 	text.textContent = userRatio + "%";
@@ -266,3 +280,78 @@ function drawAudit() {
 	down.textContent = "Received: " + userDown + "Kb"
 	div.append(up, down)
 }
+
+function groupXpByDay(xpData) {
+  const grouped = {}
+
+  xpData.forEach(tx => {
+    const date = new Date(tx.date)
+    const key = date.toISOString().split("T")[0]
+    if (!grouped[key]) {
+      grouped[key] = 0
+    }
+    grouped[key] += tx.amount
+  })
+
+  return Object.entries(grouped).map(([day, amount]) => ({
+    date: new Date(day),
+    amount
+  }))
+}
+
+function drawXp(xpData) {
+	const svg = document.getElementById("xpGraph")
+	svg.innerHTML = ""
+
+	const vb = svg.viewBox.baseVal
+	const padding = 40
+	const width = vb.width - padding * 2
+	const height = vb.height - padding * 2
+
+	let cumulativeXP = 0
+	const points = xpData.map((tx, index) => {
+		cumulativeXP += tx.amount
+		return {
+			x: index,
+			xp: cumulativeXP / 1000 
+		}
+	})
+
+	if (points.length === 0) return
+
+	const maxXP = Math.max(...points.map(p => p.xp))
+	const stepX = width / Math.max(points.length - 1, 1)
+
+	const scaledPoints = points.map((p, i) => ({
+		x: padding + i * stepX,
+		y: padding + height * (1 - p.xp / maxXP),
+		label: p.xp.toFixed(0)
+	}))
+
+	const path = scaledPoints.map((p, i) => (i === 0 ? `M ${p.x},${p.y}` : `L ${p.x},${p.y}`)).join(" ")
+	const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path")
+	pathElement.setAttribute("d", path)
+	pathElement.setAttribute("stroke", "#f4fcfb")
+	pathElement.setAttribute("fill", "none")
+	pathElement.setAttribute("stroke-width", 2)
+	svg.appendChild(pathElement)
+
+	scaledPoints.forEach(p => {
+		const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle")
+		dot.setAttribute("cx", p.x)
+		dot.setAttribute("cy", p.y)
+		dot.setAttribute("r", 3)
+		dot.setAttribute("fill", "#f4fcfb")
+		svg.appendChild(dot)
+
+		const label = document.createElementNS("http://www.w3.org/2000/svg", "text")
+		label.setAttribute("x", p.x)
+		label.setAttribute("y", p.y - 8)
+		label.setAttribute("text-anchor", "middle")
+		label.setAttribute("font-size", "10")
+		label.setAttribute("fill", "#f4fcfb")
+		label.textContent = p.label + ' Kb'
+		svg.appendChild(label)
+	})
+}
+523
