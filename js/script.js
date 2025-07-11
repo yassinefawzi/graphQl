@@ -1,6 +1,18 @@
 document.getElementById('logInButton').addEventListener('click', logIn)
 
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem('jwtToken')
+    if (!token) {
+        document.getElementById("logIn").style.display = "block"
+        document.getElementById("profileSection").style.display = "none"
+    } else {
+        document.getElementById("logIn").style.display = "none"
+        Profile()
+    }
+})
+
 async function logIn(e) {
+    const token = localStorage.getItem('jwtToken')
     e.preventDefault();
     const form = document.getElementById('logInForm');
     const username = document.getElementById('username').value;
@@ -26,7 +38,8 @@ async function logIn(e) {
         console.log('Login successful:');
         const cleanToken = token.replace(/^"(.*)"$/, '$1');
         localStorage.setItem('jwtToken', cleanToken);
-        window.location.href = 'profile.html';
+        document.getElementById("logIn").style.display = "none";
+        Profile()
         form.reset();
     } catch (error) {
         console.error('Error during login:', error);

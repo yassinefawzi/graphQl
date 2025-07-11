@@ -7,15 +7,22 @@ let userDown = 0
 let userFullName = ""
 let userLvl = 0
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const token = localStorage.getItem('jwtToken')
-  if (!token) {
-    window.location.href = 'index.html'
-    return
-  }
-
-  try {
-    const query = `
+async function Profile() {
+	const token = localStorage.getItem('jwtToken')
+	if (!token) {
+		document.getElementById("logIn").style.display = "block"
+		document.getElementById("profileSection").style.display = "none"
+		return
+	} else {
+		document.getElementById("profileSection").style.display = "block"
+	}
+	document.getElementById("name").innerHTML = ""
+	document.getElementById("info").innerHTML = '<h1>level</h1><svg id="infoGraph" viewBox="0 0 800 150" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"></svg>'
+	document.getElementById("audit").innerHTML = '<h1>audit</h1><svg id="auditGraph" viewBox="0 0 800 150" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"></svg><div id="auditStat"></div>'
+	document.getElementById("skillGraph").innerHTML = ""
+	document.getElementById("xpGraph").innerHTML = ""
+	try {
+		const query = `
       query {
         user {
           id
@@ -60,96 +67,105 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     `
 
-    const response = await fetch("https://learn.zone01oujda.ma/api/graphql-engine/v1/graphql", {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ query })
-    })
+		const response = await fetch("https://learn.zone01oujda.ma/api/graphql-engine/v1/graphql", {
+			method: 'POST',
+			headers: {
+				'Authorization': `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ query })
+		})
 
-    const result = await response.json()
+		const result = await response.json()
 
-    if (result.errors) {
-      console.error('GraphQL errors:', JSON.stringify(result.errors, null, 2))
-      localStorage.removeItem('jwtToken')
-      window.location.href = 'index.html'
-      return
-    }
+		if (result.errors) {
+			console.error('GraphQL errors:', JSON.stringify(result.errors, null, 2))
+			localStorage.removeItem('jwtToken')
+			document.getElementById("logIn").style.display = "block"
+			document.getElementById("profileSection").style.display = "none"
+			return
+		}
 
-    const userData = result.data.user[0]
-    if (!userData) {
-      console.error('User data not found in the response')
-      localStorage.removeItem('jwtToken')
-      window.location.href = 'index.html'
-      return
-    }
-    // User Name
-    userLogIn = userData.login
-    userFullName = userData.firstName + " " + userData.lastName
+		const userData = result.data.user[0]
+		if (!userData) {
+			console.error('User data not found in the response')
+			localStorage.removeItem('jwtToken')
+			document.getElementById("logIn").style.display = "block"
+			document.getElementById("profileSection").style.display = "none"
+			return
+		}
+		// User Name
+		userLogIn = userData.login
+		userFullName = userData.firstName + " " + userData.lastName
 
-    userLvl = Number(userData.level[0]?.amount ?? 0)
-    // User Xp
-    const totalXPBytes = userData.transactions.reduce((sum, tx) => sum + Number(tx.amount), 0)
-    userXp = Math.ceil(totalXPBytes / 1000)
-	const xpOverTime = userData.transactions.map(tx => ({
-		date: new Date(tx.createdAt),
-		amount: Number(tx.amount)
-	}))
+		userLvl = Number(userData.level[0]?.amount ?? 0)
+		// User Xp
+		const totalXPBytes = userData.transactions.reduce((sum, tx) => sum + Number(tx.amount), 0)
+		userXp = Math.ceil(totalXPBytes / 1000)
+		const xpOverTime = userData.transactions.map(tx => ({
+			date: new Date(tx.createdAt),
+			amount: Number(tx.amount)
+		}))
 
-    // Sum audit UP/DOWN
-    userUp = userData.upTransactions.reduce((sum, tx) => sum + Number(tx.amount), 0)
-	userUp = (userUp / 1000).toFixed(0)
-    userDown = userData.downTransactions.reduce((sum, tx) => sum + Number(tx.amount), 0)
-	userDown = (userDown / 1000).toFixed(0)
+		// Sum audit UP/DOWN
+		userUp = userData.upTransactions.reduce((sum, tx) => sum + Number(tx.amount), 0)
+		userUp = (userUp / 1000).toFixed(0)
+		userDown = userData.downTransactions.reduce((sum, tx) => sum + Number(tx.amount), 0)
+		userDown = (userDown / 1000).toFixed(0)
 
-    // Audit ratio
-    userRatio = userDown === 0 ? 1 : (userUp / userDown).toFixed(2)
+		// Audit ratio
+		userRatio = userDown === 0 ? 1 : (userUp / userDown).toFixed(2)
 
-    // Skills array
-    const skills = userData.skillTransactions.map(tx => ({
-      type: tx.type,
-      amount: Number(tx.amount),
-      objectId: tx.object?.id,
-      name: tx.object?.name,
-      objectType: tx.object?.type,
-    }))
-    // Group skills by type and sum amounts
-    const skillMap = new Map()
-    skills.forEach(skill => {
-      const key = skill.type
-      if (!skillMap.has(key)) {
-        skillMap.set(key, 0)
-      }
-      if (skill.amount > skillMap.get(key)) {
-        skillMap.set(key, skill.amount)
-      }
-    })
-    // Convert Map to Array of Objects
-    skillsObj = Array.from(skillMap.entries().map(([type, amount]) => ({type,amount}))).sort((a, b) => b.amount - a.amount)
+		// Skills array
+		const skills = userData.skillTransactions.map(tx => ({
+			type: tx.type,
+			amount: Number(tx.amount),
+			objectId: tx.object?.id,
+			name: tx.object?.name,
+			objectType: tx.object?.type,
+		}))
+		// Group skills by type and sum amounts
+		const skillMap = new Map()
+		skills.forEach(skill => {
+			const key = skill.type
+			if (!skillMap.has(key)) {
+				skillMap.set(key, 0)
+			}
+			if (skill.amount > skillMap.get(key)) {
+				skillMap.set(key, skill.amount)
+			}
+		})
+		// Convert Map to Array of Objects
+		skillsObj = Array.from(skillMap.entries().map(([type, amount]) => ({ type, amount }))).sort((a, b) => b.amount - a.amount)
 
-	const nameDiv = document.getElementById("name")
-	const nameh1 = document.createElement("h1")
-	nameh1.textContent = "Hello " + userFullName
-	nameDiv.appendChild(nameh1)
-    drawInfo()
-	drawBarChart()
-	drawAudit()
-	const groupedXp = groupXpByDay(xpOverTime)
-	drawXp(groupedXp)
-  } catch (error) {
-    console.error('Error fetching user data:', error)
-	localStorage.removeItem('jwtToken')
-    window.location.href = 'index.html'
-    alert('Failed to load user data. Please try again later.')
-  }
-})
+		const nameDiv = document.getElementById("name")
+		const nameh1 = document.createElement("h1")
+		nameh1.textContent = "Hello " + userFullName
+		nameDiv.appendChild(nameh1)
+		drawInfo()
+		drawBarChart()
+		drawAudit()
+		const groupedXp = groupXpByDay(xpOverTime)
+		drawXp(groupedXp)
+	} catch (error) {
+		console.error('Error fetching user data:', error)
+		localStorage.removeItem('jwtToken')
+		document.getElementById("logIn").style.display = "block"
+		document.getElementById("profileSection").style.display = "none"
+		alert('Failed to load user data. Please try again later.')
+	}
+}
 
 document.getElementById('logOutButton').addEventListener('click', () => {
-  localStorage.removeItem('jwtToken')
-  window.location.href = 'index.html'
-  console.log("Logged out")
+	localStorage.removeItem('jwtToken')
+	document.getElementById("logIn").style.display = "block"
+	document.getElementById("profileSection").style.display = "none"
+	document.getElementById("name").innerHTML = ""
+	document.getElementById("info").innerHTML = ""
+	document.getElementById("audit").innerHTML = ""
+	document.getElementById("skillGraph").innerHTML = ""
+	document.getElementById("xpGraph").innerHTML = ""
+	console.log("Logged out")
 })
 
 
@@ -282,21 +298,21 @@ function drawAudit() {
 }
 
 function groupXpByDay(xpData) {
-  const grouped = {}
+	const grouped = {}
 
-  xpData.forEach(tx => {
-    const date = new Date(tx.date)
-    const key = date.toISOString().split("T")[0]
-    if (!grouped[key]) {
-      grouped[key] = 0
-    }
-    grouped[key] += tx.amount
-  })
+	xpData.forEach(tx => {
+		const date = new Date(tx.date)
+		const key = date.toISOString().split("T")[0]
+		if (!grouped[key]) {
+			grouped[key] = 0
+		}
+		grouped[key] += tx.amount
+	})
 
-  return Object.entries(grouped).map(([day, amount]) => ({
-    date: new Date(day),
-    amount
-  }))
+	return Object.entries(grouped).map(([day, amount]) => ({
+		date: new Date(day),
+		amount
+	}))
 }
 
 function drawXp(xpData) {
@@ -313,7 +329,7 @@ function drawXp(xpData) {
 		cumulativeXP += tx.amount
 		return {
 			x: index,
-			xp: cumulativeXP / 1000 
+			xp: cumulativeXP / 1000
 		}
 	})
 
@@ -354,4 +370,3 @@ function drawXp(xpData) {
 		svg.appendChild(label)
 	})
 }
-523

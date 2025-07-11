@@ -18,6 +18,10 @@ body {
     color: var(--text-color);
 }
 
+#profileSection {
+    display: none;
+}
+
 h1 {
     text-align: center;
     font-size: 3rem;

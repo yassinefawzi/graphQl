@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/css/style.css">
+        <link rel="stylesheet" href="/css/profile.css">
+        <title>graphQl</title>
+    </head>
+    <body>
+        <section class="logIn" id="logIn">
+            <h1>Log In</h1>
+            <form class="logInForm" id="logInForm">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Username" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                <input type="submit" value="Log In" id="logInButton">
+                <p id="errorMessage" style="color: red;"></p>
+            </form>
+        </section>
+        <section id="profileSection">
+            <section class="navbar" id="navbar">
+            <h2>GraphQL</h2>
+            <button id="logOutButton">Log Out</button>
+        </section>
+        <div id="name"></div>
+        <section id="infoAudit">
+            <div id="info">
+                <h1>level</h1>
+                <svg id="infoGraph" viewBox="0 0 800 150" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+            <div id="audit">
+                <h1>audit</h1>
+                <svg id="auditGraph" viewBox="0 0 800 150" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"></svg>
+                <div id="auditStat"></div>
+            </div>
+        </section>
+        <section id="skillsSection">
+            <div id="skillsDiv">
+                <h2>Skills</h2>
+                <svg id="skillGraph" viewBox="0 0 600 700" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+        </section>
+        <section id="xpSection">
+            <div id="xpDiv">
+                <h2>Xp</h2>
+                <svg id="xpGraph" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+        </section>
+        <section class="user" id="user"></section>
+        </section>
+    <script src="/js/script.js"></script>
+    <script src="/js/profile.js"></script>
+    </body>
+</html>
