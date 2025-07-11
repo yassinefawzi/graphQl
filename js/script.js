@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 async function logIn(e) {
+    document.getElementById("errorMessage").textContent = ""
     const token = localStorage.getItem('jwtToken')
     e.preventDefault();
     const form = document.getElementById('logInForm');
@@ -43,6 +44,7 @@ async function logIn(e) {
         form.reset();
     } catch (error) {
         console.error('Error during login:', error);
+        document.getElementById("errorMessage").textContent = "failed to log in"
         form.reset();
         return;
     }
