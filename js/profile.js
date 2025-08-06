@@ -336,14 +336,18 @@ function drawXp(xpData) {
 	if (points.length === 0) return
 
 	const maxXP = Math.max(...points.map(p => p.xp))
+	
+	// calculate distace between points
 	const stepX = width / Math.max(points.length - 1, 1)
 
+	// calculate position for points
 	const scaledPoints = points.map((p, i) => ({
 		x: padding + i * stepX,
-		y: padding + height * (1 - p.xp / maxXP),
+		y: padding + height * (1 - p.xp / maxXP),	
 		label: p.xp.toFixed(0)
 	}))
 
+	// move to the target position and start drawing the xp line
 	const path = scaledPoints.map((p, i) => (i === 0 ? `M ${p.x},${p.y}` : `L ${p.x},${p.y}`)).join(" ")
 	const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path")
 	pathElement.setAttribute("d", path)
